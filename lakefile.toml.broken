@@ -1,0 +1,12 @@
+name = "ContinuityEngine"
+version = "0.1.0"
+
+[dependencies]
+mathlib = { git = "https://github.com/leanprover-community/mathlib4" }
+
+[[lean_lib]]
+name = "ContinuityEngine"
+
+[[lean_exe]]
+name = "continuityengine"
+root = "Main"

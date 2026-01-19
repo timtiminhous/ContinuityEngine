@@ -1,0 +1,15 @@
+name = "ContinuityEngine"
+version = "0.1.0"
+defaultTargets = ["ContinuityEngine"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+version = "git#master"
+
+[[lean_lib]]
+name = "ContinuityEngine"
+
+[[lean_exe]]
+name = "continuityengine"
+root = "Main"
