@@ -5,7 +5,7 @@ import ContinuityEngine.Physics_Proof
 /-!
 # The Bridge Theorem: Discrete Kernel to Continuous Manifold
 Connects computational kernels (Primorial Moduli) to physical manifold (Golden Angle × α⁻¹).
-STATUS: VERIFIED
+STATUS: VERIFIED (Pure Term Mode - Fixed)
 -/
 
 noncomputable section
@@ -70,10 +70,9 @@ theorem discrete_phase_bounded (val : ℕ) (m : ℕ) (hm : 0 < m) (hv : val < m)
     rw [div_lt_one (Nat.cast_pos.mpr hm)]
     exact Nat.cast_lt.mpr hv
   calc (val : ℝ) / (m : ℝ) * 2 * Real.pi
-      < 1 * 2 * Real.pi := by nlinarith [Real.pi_pos]
+     < 1 * 2 * Real.pi := by nlinarith [Real.pi_pos]
     _ = 2 * Real.pi := by ring
 
--- Key: modular reduction always gives valid phase
 theorem phase_from_mod_bounded (n : ℕ) (m : ℕ) (hm : 0 < m) :
   0 ≤ discrete_phase (n % m) m ∧ discrete_phase (n % m) m < 2 * Real.pi := by
   exact ⟨discrete_phase_nonneg (n % m) m, discrete_phase_bounded (n % m) m hm (Nat.mod_lt n hm)⟩
@@ -89,7 +88,6 @@ theorem primorial_ratio_structure :
   unfold primorial_4 primorial_5 primorial_6 primorial_7
   norm_num
 
--- (Restored)
 theorem primorial_chain :
   primorial_5 = primorial_4 * 11 ∧
   primorial_6 = primorial_5 * 13 ∧
@@ -98,7 +96,6 @@ theorem primorial_chain :
   unfold primorial_4 primorial_5 primorial_6 primorial_7 primorial_8
   decide
 
--- (Restored)
 theorem scaling_ratio_143 :
   scaling_factor_30030 / scaling_factor_210 = 143 := by
   unfold scaling_factor_30030 scaling_factor_210
@@ -113,15 +110,17 @@ theorem structural_correspondence (primorial : ℕ) (hp : 0 < primorial) :
   (∀ n, discrete_phase (n % primorial) primorial < 2 * Real.pi) ∧
   (0 < prime_field_rotation) ∧
   (prime_field_rotation ≠ 0) ∧
-  (0 < primorial_scaling primorial) := by
-  refine ⟨?_, ?_, rotation_pos, rotation_ne_zero, primorial_scaling_pos primorial hp⟩
-  · intro n; exact (phase_from_mod_bounded n primorial hp).1
-  · intro n; exact (phase_from_mod_bounded n primorial hp).2
+  (0 < primorial_scaling primorial) :=
+  -- Direct term construction
+  ⟨ fun n => (phase_from_mod_bounded n primorial hp).1,
+    fun n => (phase_from_mod_bounded n primorial hp).2,
+    rotation_pos,
+    rotation_ne_zero,
+    primorial_scaling_pos primorial hp ⟩
 
--- (Restored)
 theorem approximation_bound (primorial : ℕ) (hp : 0 < primorial) (n : ℕ) :
-  let θ := discrete_phase (n % primorial) primorial
-  0 ≤ θ ∧ θ < 2 * Real.pi ∧
+  0 ≤ discrete_phase (n % primorial) primorial ∧
+  discrete_phase (n % primorial) primorial < 2 * Real.pi ∧
   (∀ k : ℕ, k < primorial →
     discrete_phase k primorial < 2 * Real.pi ∧
     discrete_phase k primorial ≥ 0) := by
@@ -141,37 +140,68 @@ theorem phase_resolution_improves :
   (2 * Real.pi / primorial_6 < 2 * Real.pi / primorial_5) ∧
   (2 * Real.pi / primorial_7 < 2 * Real.pi / primorial_6) := by
   unfold primorial_4 primorial_5 primorial_6 primorial_7
-  -- Explicitly split the goals
   refine ⟨?_, ?_, ?_⟩
-  -- Proof 1
-  · apply div_lt_div_of_pos_left
-    · apply mul_pos; norm_num; exact Real.pi_pos
-    · norm_num
-    · norm_num
-  -- Proof 2
-  · apply div_lt_div_of_pos_left
-    · apply mul_pos; norm_num; exact Real.pi_pos
-    · norm_num
-    · norm_num
-  -- Proof 3
-  · apply div_lt_div_of_pos_left
-    · apply mul_pos; norm_num; exact Real.pi_pos
-    · norm_num
-    · norm_num
+  · apply div_lt_div_of_pos_left; apply mul_pos; norm_num; exact Real.pi_pos; norm_num; norm_num
+  · apply div_lt_div_of_pos_left; apply mul_pos; norm_num; exact Real.pi_pos; norm_num; norm_num
+  · apply div_lt_div_of_pos_left; apply mul_pos; norm_num; exact Real.pi_pos; norm_num; norm_num
 
 -- =================================================================
--- KERNEL STABILITY THEOREM
+-- KERNEL STABILITY THEOREM (Pure Term Mode)
 -- =================================================================
 
 theorem kernel_stability (n : ℕ) (primorial : ℕ) (hp : 0 < primorial) :
-  let θ := discrete_phase (n % primorial) primorial
-  let scale := primorial_scaling primorial
-  (0 ≤ θ) ∧ (θ < 2 * Real.pi) ∧ (0 < scale) ∧ (0 ≤ θ * scale) := by
-  refine ⟨?_, ?_, primorial_scaling_pos primorial hp, ?_⟩
-  · exact (phase_from_mod_bounded n primorial hp).1
-  · exact (phase_from_mod_bounded n primorial hp).2
-  · apply mul_nonneg
-    · exact (phase_from_mod_bounded n primorial hp).1
-    · exact le_of_lt (primorial_scaling_pos primorial hp)
+  (0 ≤ discrete_phase (n % primorial) primorial) ∧
+  (discrete_phase (n % primorial) primorial < 2 * Real.pi) ∧
+  (0 < primorial_scaling primorial) ∧
+  (0 ≤ discrete_phase (n % primorial) primorial * primorial_scaling primorial) :=
+  -- Direct construction ⟨A, B, C, D⟩
+  ⟨ (phase_from_mod_bounded n primorial hp).1,
+    (phase_from_mod_bounded n primorial hp).2,
+    primorial_scaling_pos primorial hp,
+    mul_nonneg (phase_from_mod_bounded n primorial hp).1 (le_of_lt (primorial_scaling_pos primorial hp)) ⟩
+
+-- =================================================================
+-- MISSING THEOREMS (RESTORED - Pure Term Mode)
+-- =================================================================
+
+lemma scaling_factor_210_pos : 0 < scaling_factor_210 := by unfold scaling_factor_210; norm_num
+lemma scaling_factor_2310_pos : 0 < scaling_factor_2310 := by unfold scaling_factor_2310; norm_num
+lemma scaling_factor_30030_pos : 0 < scaling_factor_30030 := by unfold scaling_factor_30030; norm_num
+lemma scaling_factor_510510_pos : 0 < scaling_factor_510510 := by unfold scaling_factor_510510; norm_num
+
+theorem discrete_phase_in_range (val : ℕ) (m : ℕ) (hm : 0 < m) (hv : val < m) :
+    0 ≤ discrete_phase val m ∧ discrete_phase val m < 2 * Real.pi :=
+  ⟨discrete_phase_nonneg val m, discrete_phase_bounded val m hm hv⟩
+
+theorem scaling_ratio_preserved :
+    scaling_factor_30030 / scaling_factor_210 = (30030 : ℝ) / 210 := by
+  unfold scaling_factor_30030 scaling_factor_210
+
+  ring
+
+theorem bridge_P4 (n : ℕ) :
+    0 ≤ discrete_phase (n % primorial_4) primorial_4 ∧
+    discrete_phase (n % primorial_4) primorial_4 < 2 * Real.pi :=
+  phase_from_mod_bounded n primorial_4 primorial_4_pos
+
+theorem bridge_P5 (n : ℕ) :
+    0 ≤ discrete_phase (n % primorial_5) primorial_5 ∧
+    discrete_phase (n % primorial_5) primorial_5 < 2 * Real.pi :=
+  phase_from_mod_bounded n primorial_5 primorial_5_pos
+
+theorem bridge_P6 (n : ℕ) :
+    0 ≤ discrete_phase (n % primorial_6) primorial_6 ∧
+    discrete_phase (n % primorial_6) primorial_6 < 2 * Real.pi :=
+  phase_from_mod_bounded n primorial_6 primorial_6_pos
+
+theorem bridge_P7 (n : ℕ) :
+    0 ≤ discrete_phase (n % primorial_7) primorial_7 ∧
+    discrete_phase (n % primorial_7) primorial_7 < 2 * Real.pi :=
+  phase_from_mod_bounded n primorial_7 primorial_7_pos
+
+theorem bridge_P8 (n : ℕ) :
+    0 ≤ discrete_phase (n % primorial_8) primorial_8 ∧
+    discrete_phase (n % primorial_8) primorial_8 < 2 * Real.pi :=
+  phase_from_mod_bounded n primorial_8 primorial_8_pos
 
 end UnifiedBridge

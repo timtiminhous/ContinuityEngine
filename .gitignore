@@ -1,2 +1,5 @@
 /.lake
 mathlib4/
+.lake/
+*.olean
+*.tar.gz
